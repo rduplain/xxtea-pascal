@@ -1,0 +1,86 @@
+== XXTEA: Corrected Block Tiny Encryption Algorithm (TEA) in Pascal
+
+The xxtea-pascal project builds a static `cipher` binary executable using
+https://www.freepascal.org/[Free Pascal] to provide a minimal command-line
+interface to the http://www.movable-type.co.uk/scripts/xxtea.pdf[XXTEA]
+encryption algorithm using a block cipher with a symmetric key.
+
+
+=== Usage
+
+General:
+
+[source,sh]
+----
+cipher -k secret encrypt # stdin is plaintext, stdout is encrypted binary
+cipher -k secret decrypt # stdin is encrypted, stdout is plaintext
+----
+
+Example:
+
+[source,sh]
+----
+cipher -k 'Up to 16 char...' encrypt < plaintext_file > encrypted_data
+cipher -k 'Up to 16 char...' decrypt < encrypted_data > plaintext_file
+----
+
+
+=== Dependencies
+
+Install the Free Pascal Compiler:
+
+* Debian/Ubuntu: `sudo apt install fpc`.
+* Mac OS X: `brew install fpc`.
+* Windows & Others: https://www.freepascal.org/download.html
+
+The `cipher` project is portable to all major platforms, those where the Free
+Pascal Compiler is available. Build `cipher` with `fpc -ocipher Cipher.pas`. A
+Makefile is available for Unix with GNU Make; just run `make` to build and
+test.
+
+Developed on fpc 3.0.4 (2017).
+
+
+=== Commentary
+
+The XXTEA.pas module is faithful to the original 1998 algorithm as published.
+
+The `cipher` executable is a demonstration. The XXTEA algorithm published in
+1998 without additional corrections since. XXTEA as published uses a 128-bit
+encryption key, compared to modern uses of 128, 192, and 256-bit
+https://en.wikipedia.org/wiki/Advanced_Encryption_Standard[Advanced Encryption
+Standard (AES)] keys.
+
+https://eprint.iacr.org/2010/254[Cryptanalysis of XXTEA] (2010) shows a
+potential 59 bits of security in XXTEA via a chosen-plaintext attack, down from
+the potential 128 offered by a theoretically ideal 128-bit key and
+algorithm. What is more, mitigating related-key attacks requires a strong
+random number generator. By using a command-line argument, `cipher` limits its
+key to that of readily printable characters, which narrows the 128-bit key
+considerably, even if the characters are purely random. Hence, the resulting
+`cipher` binary is less secure than XXTEA.
+
+When converting from strings to to integer arrays, the `cipher` executable
+ignores the CPU endianness of byte order toward the goals of simplification and
+portability of round-trip encryption/decryption.
+
+Note that unpadded encryption ciphers have output ciphertext with length that
+correlate to their input plaintext length, such that the only padding added in
+a block cipher is that which is required to align to the block size. Depending
+on the application, this could provide a clue to anyone inspecting encrypted
+data. Further, TEA as a cipher itself has no concept as to whether a key is
+correct, such that `cipher` decryption will result in garbled output when the
+key is invalid; an application can add (non-predictable) checkable information
+to detect a correct or incorrect key on decryption.
+
+Do not provide sensitive data as a command-line argument to any command,
+including `cipher`, as this information is available to the operating system
+process table and shell history.
+
+
+=== License
+
+link:LICENSE[ISC License]
+
+Note encryption laws and regulations within relevant jurisdictions and their
+import/export.
