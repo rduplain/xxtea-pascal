@@ -38,6 +38,12 @@ Pascal Compiler is available. Build `cipher` with `fpc -ocipher Cipher.pas`. A
 Makefile is available for Unix with GNU Make; just run `make` to build and
 test.
 
+The resulting `cipher` executable on Windows has a bug in how the underlying
+platform reads standard input on the console, in which some binary input is not
+properly read as a string; some round-trip encryption/decryption on Windows
+console will fail and result in garbled output. This is only a limitation on
+Windows; the `cipher` executable is fully functional on Unix platforms.
+
 Developed on fpc 3.0.4 (2017).
 
 
