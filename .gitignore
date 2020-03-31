@@ -1,5 +1,6 @@
 cipher
 Cipher
+cipher.exe
 *.dat
 *.o
 *.ppu

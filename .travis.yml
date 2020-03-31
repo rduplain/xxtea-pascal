@@ -1,0 +1,36 @@
+matrix:
+  include:
+    - name: GNU/Linux
+      os: linux
+      language: c
+      addons:
+        apt:
+          packages: fpc
+      script:
+        - make
+    - name: Mac OS X
+      os: osx
+      language: c
+      addons:
+        homebrew:
+          packages: fpc
+          update: true
+      script:
+        - make
+    - name: Windows
+      os: windows
+      language: c
+      install:
+        - choco install -y lazarus
+      before_script:
+        - export PATH=$TRAVIS_BUILD_DIR:/C/Windows/System32:$PATH
+      script:
+        - /C/lazarus/fpc/*/bin/*/fpc.exe -ocipher.exe -Xs -XS -XX Cipher.pas
+        - cipher.exe -h
+        - ./bin/test.cmd cipher.exe
+      cache:
+        directories:
+          - $HOME/AppData/Local/Temp/chocolatey
+notifications:
+  email:
+    on_success: never

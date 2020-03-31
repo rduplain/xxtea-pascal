@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+# Test `cipher` executable on Unix.
+#
+# Intended usage from project root:
+#
+#     make cipher && ./bin/test ./cipher
+
+# Global.
+CIPHER=                                 # Path to `cipher`, first CLI arg.
+
+cipher() {
+    # Run injected executable as though its native on the PATH.
+
+    "$CIPHER" "$@"
+}
+
+suite() {
+    # Run test suite.
+
+    run test_help "help output"
+    run test_empty "that empty input gives empty output"
+    run test_encrypt "that encryption is not plaintext"
+    run test_round_trip "a round-trip encrypt/decrypt"
+    run test_invalid_key "an invalid key"
+
+    echo
+    echo "All tests passed."
+}
+
+run() {
+    # Run function ($1) with message (remaining $@), exit non-zero on failure.
+
+    fn="$1"
+    shift
+
+    echo -n "Test $@... "
+    output=$($fn 2>&1)
+    status=$?
+
+    if [ $status -eq 0 ]; then
+        echo "ok."
+    else
+        echo "FAIL!"
+        echo
+        printf '%s\n' "$output"
+        exit $status
+    fi
+}
+
+test_help() {
+    output=$(cipher -h)
+    if ! printf %s "$output" | grep -q '128-bit encryption key.'; then
+        printf '%s\n' "$output"
+        return 1
+    fi
+}
+
+test_empty() {
+    output=$(cipher -k secret encrypt < /dev/null)
+    if [ -n "$output" ]; then
+        echo "Encrypt ..."
+        printf '%s\n' "$output"
+        return 1
+    fi
+
+    output=$(cipher -k secret decrypt < /dev/null)
+    if [ -n "$output" ]; then
+        echo "Decrypt ..."
+        printf '%s\n' "$output"
+        return 1
+    fi
+}
+
+test_encrypt() {
+    output=$(echo -n 'Hello, world!' | cipher -k secret encrypt)
+    if printf %s "$output" | grep -iq hello; then
+        printf '%s\n' "$output"
+        return 1
+    fi
+}
+
+test_round_trip() {
+    output=$(echo -n 'Hello, world!' | \
+                 cipher -k secret encrypt | \
+                 cipher -k secret decrypt)
+    if [ "$output" != "Hello, world!" ]; then
+        printf '%s\n' "$output"
+        return 1
+    fi
+}
+
+test_invalid_key() {
+    output=$(echo -n 'Hello, world!' | \
+                 cipher -k secret encrypt | \
+                 cipher -k invalid decrypt)
+    if [ "$output" = "Hello, world!" ]; then
+        printf '%s\n' "$output"
+        return 1
+    fi
+}
+
+main() {
+    if [ $# -ne 1 ]; then
+        {
+            echo "usage: test CIPHER"
+            echo
+            echo 'CIPHER is path to `cipher` executable under test.'
+        } >&2
+        return 2
+    fi
+
+    CIPHER="$1"
+    shift
+
+    if [ ! -x "$CIPHER" ]; then
+        echo "error: $CIPHER is not executable." >&2
+        return 2
+    fi
+
+    suite
+}
+
+main "$@"
