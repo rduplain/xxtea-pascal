@@ -1,5 +1,10 @@
 == XXTEA: Corrected Block Tiny Encryption Algorithm (TEA) in Pascal
 
+:travis-ci: https://travis-ci.org/github/rduplain/xxtea-pascal
+:travis-ci-badge: https://travis-ci.org/rduplain/xxtea-pascal.svg?branch=master
+
+image:{travis-ci-badge}[Build Status, link={travis-ci}]
+
 The xxtea-pascal project builds a static `cipher` binary executable using
 https://www.freepascal.org/[Free Pascal] to provide a minimal command-line
 interface to the http://www.movable-type.co.uk/scripts/xxtea.pdf[XXTEA]
